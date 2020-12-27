@@ -11,7 +11,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.SearchView;
+import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -45,17 +45,21 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
 
-        LoadJson();
+        LoadJson("");
     }
 
-    public void LoadJson(){
+    public void LoadJson(final String keyword){
         ApiInterface apiInterface = ApiClient.getApiClient().create(ApiInterface.class);
 
         String country = Utils.getCountry();
+        String language = Utils.getLanguage();
 
         Call<News> call;
-        call = apiInterface.getNews(country, API_KEY);
-
+        if (keyword.length() > 0){
+            call = apiInterface.getNewsSearch(keyword, language, "publishedAt", API_KEY);
+        }else {
+            call = apiInterface.getNews(country, API_KEY);
+        }
         call.enqueue(new Callback<News>() {
             @Override
             public void onResponse(Call<News> call, Response<News> response) {
@@ -96,14 +100,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (query.length() > 2){
-                    LoadJson();
+                    LoadJson(query);
                 }
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                LoadJson();
+                LoadJson(newText);
                 return false;
             }
         });
